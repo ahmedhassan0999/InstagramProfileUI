@@ -1,6 +1,5 @@
 package com.example.instagramprofileui
 
-import android.graphics.Paint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -21,47 +20,87 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.PersonPin
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.collections.listOf
 
 @Composable
 fun ProfileScreen() {
-    Column(
+    var selectedTabIndex by remember {
+        mutableIntStateOf(0)
+    }
+    Scaffold(
         modifier = Modifier.fillMaxSize()
-    ) {
-        TopBar("ahmedelsayed10t")
-        Spacer(modifier = Modifier.height(10.dp))
-        ProfileSection()
-        Spacer(modifier = Modifier.height(25.dp))
-        ButtonSection(modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(25.dp))
-        HighlightSection(
-            highlights = listOf(
-            StoryHighlight(
-                image = painterResource(R.drawable.story1),
-                text = "Me"),
-            StoryHighlight(
-                image = painterResource(R.drawable.story0),
-                text = "Art"
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            TopBar("ahmedelsayed10t")
+            Spacer(modifier = Modifier.height(10.dp))
+            ProfileSection()
+            Spacer(modifier = Modifier.height(25.dp))
+            ButtonSection(modifier = Modifier.fillMaxWidth())
+            Spacer(modifier = Modifier.height(25.dp))
+            HighlightSection(
+                highlights = listOf(
+                    ImageWithText(
+                        image = painterResource(R.drawable.story1),
+                        text = "Me"
+                    ),
+                    ImageWithText(
+                        image = painterResource(R.drawable.story0),
+                        text = "Art"
+                    )
+                )
             )
-        ))
+            Spacer(modifier = Modifier.height(10.dp))
+            PostTabView(
+                imageWithTexts = listOf(
+                    ImageWithText(
+                        image = rememberVectorPainter(Icons.Default.GridView),
+                        text = "Posts"
+                    ),
+                    ImageWithText(
+                        image = rememberVectorPainter(Icons.Default.PlayCircle),
+                        text = "Reels"
+                    ),
+                    ImageWithText(
+                        image = rememberVectorPainter(Icons.Default.PersonPin),
+                        text = "Tagged"
+                    )
+                )
+            ) {
+                selectedTabIndex = it
+            }
+        }
     }
 }
 
@@ -75,7 +114,7 @@ fun TopBar(
         horizontalArrangement = Arrangement.SpaceAround,
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = 32.dp, start = 10.dp, end = 10.dp)
+            .padding(horizontal = 10.dp)
     ) {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -148,7 +187,6 @@ fun RoundImage(
             .padding(3.dp)
             .clip(CircleShape)
     )
-
 }
 
 @Composable
@@ -162,7 +200,6 @@ fun StatSection(modifier: Modifier = Modifier) {
         ProfileStat(numberText = "227", text = "Followers")
         ProfileStat(numberText = "281", text = "Following")
     }
-    
 }
 
 @Composable
@@ -235,7 +272,7 @@ fun ActionButton(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(Color(0xFFEFEFEF))
+            .background(Color.LightGray)
             .clickable { onClick() }
     ) {
         if (text != null) {
@@ -260,10 +297,10 @@ fun ActionButton(
 @Composable
 fun HighlightSection(
     modifier: Modifier = Modifier,
-    highlights: List<StoryHighlight>
+    highlights: List<ImageWithText>
 ) {
     LazyRow(modifier = modifier) {
-        items(highlights.size){
+        items(highlights.size) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
@@ -278,6 +315,46 @@ fun HighlightSection(
                     text = highlights[it].text,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun PostTabView(
+    modifier: Modifier = Modifier,
+    imageWithTexts: List<ImageWithText>,
+    onTabSelected: (selectedIndex: Int) -> Unit
+) {
+    var selectedTabIndex by remember {
+        mutableIntStateOf(0)
+    }
+    val inactiveColor = Color(0xFF777777)
+
+    TabRow(
+        selectedTabIndex = selectedTabIndex,
+        containerColor = Color.Transparent,
+        contentColor = Color.Black,
+        modifier = modifier
+    ) {
+        imageWithTexts.forEachIndexed { index, item ->
+            Tab(
+                selected = selectedTabIndex == index,
+                selectedContentColor = Color.Black,
+                unselectedContentColor = inactiveColor,
+                onClick = {
+                    selectedTabIndex = index
+                    onTabSelected(index)
+                }
+            ) {
+                Icon(
+                    painter = item.image,
+                    contentDescription = item.text,
+                    tint = if (selectedTabIndex == index) Color.Black else inactiveColor,
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .size(20.dp)
                 )
             }
         }
